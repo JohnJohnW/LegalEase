@@ -20,15 +20,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Pages
-        id: pages
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
-        continue-on-error: true
-      - name: Set Pages Output
-        run: |
-          echo "pages-enabled=true" >> $GITHUB_OUTPUT
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -55,3 +50,5 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+

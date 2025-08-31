@@ -6,8 +6,8 @@ import react from '@vitejs/plugin-react';
 const base = process.env.GITHUB_ACTIONS ? '/LegalEase/' : '/';
 
 export default defineConfig({
-  plugins: [react()],
   base,
+  plugins: [react()],
   server: { port: 5173 }
 });
 

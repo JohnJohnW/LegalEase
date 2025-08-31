@@ -5,20 +5,20 @@ import remarkGfm from "remark-gfm";
 import { AnimatePresence, motion } from "framer-motion";
 import { Send, Copy } from "lucide-react";
 import Glass from "./components/Glass.jsx";
-import Particles from "./components/Particles.jsx";
+import Tilt from "./components/Tilt.jsx";
+import Float from "./components/Float.jsx";
+import TopProgress from "./components/TopProgress.jsx";
+
 import Ripples from "./components/Ripples.jsx";
-import BiomeSwitch from "./components/BiomeSwitch.jsx";
+
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 const IS_PAGES = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
 
 /* ---------- Local storage helpers (single thread) ---------- */
-const LS_THREAD_ID = "legalease.assistant.threadId";
-const LS_BIOME = "legalease.assistant.biome";
+const LS_THREAD_ID = "eco.assistant.threadId";
 function loadThreadId() { return localStorage.getItem(LS_THREAD_ID) || ""; }
 function saveThreadId(id) { localStorage.setItem(LS_THREAD_ID, id || ""); }
-function loadBiome(){ return localStorage.getItem(LS_BIOME) || 'Forest'; }
-function saveBiome(b){ localStorage.setItem(LS_BIOME, b); }
 
 /* ---------- API helpers ---------- */
 async function fetchThreadMessages(threadId) {
@@ -62,8 +62,7 @@ function extractLinks(md=""){
 
 function Brand(){
   return (
-    <div className="brand-wrap">
-      <div className="brand-logo" aria-hidden="true" />
+        <div className="brand-wrap">
       <div className="brand-text">
         <div className="title">LegalEase</div>
       </div>
@@ -187,19 +186,24 @@ function Report({ text, attachments, streaming }){
             {attachments.map((p, i) => {
               if (p.type === 'image') {
                 return (
-                  <img
-                    key={i}
-                    alt="attachment"
-                    src={`${API_BASE}/api/files/${p.file_id}`}
-                    onClick={()=>setLightbox(`${API_BASE}/api/files/${p.file_id}`)}
-                    loading="lazy"
-                    style={{ maxWidth: 360, borderRadius: 12, border: "1px solid var(--glass-border)" }}
-                  />
+                  <Tilt as="div" key={i} max={5} scale={1.015} style={{ display:'inline-block' }}>
+                    <img
+                      alt="attachment"
+                      src={`${API_BASE}/api/files/${p.file_id}`}
+                      onClick={()=>setLightbox(`${API_BASE}/api/files/${p.file_id}`)}
+                      loading="lazy"
+                      style={{ maxWidth: 360, borderRadius: 12, border: "1px solid var(--glass-border)" }}
+                    />
+                  </Tilt>
                 );
               }
               if (p.type === 'file') {
                 const href = `${API_BASE}/api/files/${p.file_id}`;
-                return <a className="attachment" key={i} href={href} download>📄 {p.filename || p.file_id}</a>;
+                return (
+                  <Tilt as="div" key={i} max={4} style={{ display:'inline-block' }}>
+                    <a className="attachment" href={href} download>📄 {p.filename || p.file_id}</a>
+                  </Tilt>
+                );
               }
               return null;
             })}
@@ -231,7 +235,7 @@ export default function App() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [files, setFiles] = useState([]);
-  const [biome, setBiome] = useState(() => loadBiome());
+
   const [showComposer, setShowComposer] = useState(true);
   const [showReport, setShowReport] = useState(false);
   const [showEllipsis, setShowEllipsis] = useState(false);
@@ -244,7 +248,7 @@ export default function App() {
   const ellipsisTimerRef = useRef(null);
   const [draft, setDraft] = useState("");
 
-  useEffect(() => { document.documentElement.setAttribute('data-biome', biome); saveBiome(biome); }, [biome]);
+  useEffect(() => { document.documentElement.setAttribute('data-biome', 'Forest'); }, []);
 
   useEffect(() => {
     if (threadId && threadId.startsWith("thread_")) {
@@ -281,6 +285,18 @@ export default function App() {
     const val = (inputRef.current?.value ?? draft) || "";
     if ((!val.trim() && files.length === 0) || isLoading) return;
 
+    // If running on GitHub Pages (static hosting) and API_BASE points to localhost
+    // we inform the user that a local backend is required.
+    try {
+      const url = new URL(API_BASE);
+      const isLocal = ["localhost", "127.0.0.1"].includes(url.hostname);
+      if (IS_PAGES && isLocal) {
+        setToast("Backend unavailable on GitHub Pages. Run the server locally and set VITE_API_BASE_URL.");
+        setTimeout(()=>setToast(""), 3200);
+        return;
+      }
+    } catch {}
+
     const nowSec = Math.floor(Date.now()/1000);
     setIsLoading(true);
     setIsStreaming(true);
@@ -303,11 +319,27 @@ export default function App() {
         const payload = threadId && threadId.startsWith('thread_') ? { message: val, threadId } : { message: val };
         resp = await fetch(`${API_BASE}/api/chat/stream`, { method: "POST", headers: { "Content-Type": "application/json", "Accept": "text/event-stream" }, body: JSON.stringify(payload) });
       }
-    } catch (e) { setIsLoading(false); setIsStreaming(false); setErrorMsg(`Network error: ${String(e)}`); return; }
+    } catch (e) {
+      setIsLoading(false); setIsStreaming(false);
+      const msg = IS_PAGES
+        ? "Backend not reachable from GitHub Pages. Please run the server locally and set VITE_API_BASE_URL."
+        : `Network error: ${String(e)}`;
+      setErrorMsg(msg);
+      setToast(msg); setTimeout(()=>setToast(""), 3600);
+      return;
+    }
 
     if (inputRef.current) inputRef.current.value = ""; setDraft(""); setFiles([]);
 
-    if (!resp.body) { setIsLoading(false); setIsStreaming(false); setErrorMsg("No response body from server."); return; }
+    if (!resp.body) {
+      setIsLoading(false); setIsStreaming(false);
+      const msg = IS_PAGES
+        ? "Backend not reachable from GitHub Pages. Please run the server locally and set VITE_API_BASE_URL."
+        : "No response body from server.";
+      setErrorMsg(msg);
+      setToast(msg); setTimeout(()=>setToast(""), 3600);
+      return;
+    }
 
     const reader = resp.body.getReader();
     const decoder = new TextDecoder("utf-8");
@@ -388,41 +420,24 @@ export default function App() {
 
   return (
     <div className="app">
-      <Particles count={biome==='Coastal' ? 14 : biome==='River' ? 10 : 12} biome={biome} />
-      <Ripples intensity={biome==='Coastal' ? 0.14 : biome==='River' ? 0.18 : 0.12} />
+      <TopProgress active={isLoading || isStreaming} />
+
+      <Ripples intensity={0.12} />
       <section className="card main">
         <div className="header">
-          <Brand />
+          <Float amplitude={3} duration={4}><Brand /></Float>
+
         </div>
-        
-        {IS_PAGES && (
-          <div style={{ 
-            background: 'rgba(239,68,68,0.1)', 
-            border: '1px solid rgba(239,68,68,0.3)', 
-            borderRadius: '12px', 
-            padding: '16px', 
-            margin: '0 20px 20px 20px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '14px', color: 'var(--ink)', marginBottom: '8px' }}>
-              <strong>🚀 Frontend Demo</strong>
-            </div>
-            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
-              This is a static demo of the LegalEase interface. To use the full AI chat functionality, 
-              you'll need to run the backend server locally. Check the README for setup instructions.
-            </div>
-          </div>
-        )}
 
         <div className="print-header" aria-hidden="true">
           <div className="print-brand">
-            <img className="print-logo-img" src="/favicon.svg" alt="" />
+            <img className="print-logo-img" src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />
             <div className="print-text">
               <div className="print-title">LegalEase</div>
-              <div className="print-sub">Legal Advice Report</div>
+                              <div className="print-sub">Legal Advice Report</div>
             </div>
           </div>
-          <div className="print-meta">{printDate} · Queensland, Australia</div>
+          <div className="print-meta">{printDate}</div>
         </div>
 
         {/* Print-only report to ensure content appears in exported PDF */}
@@ -438,31 +453,31 @@ export default function App() {
           <Glass className="composer" as="div" key="composer-pane">
             <label htmlFor="prompt" style={{ display: "block", fontSize:14, color:'var(--muted)' }}>Details (optional)</label>
             <textarea id="prompt" ref={inputRef} onInput={(e)=>setDraft(e.currentTarget.value)} onKeyDown={onKeyDown} placeholder="Describe your project or question for advice" />
-            {IS_PAGES && !draft.trim() && files.length === 0 && (
-              <div style={{ 
-                marginTop: '12px', 
-                padding: '12px', 
-                background: 'rgba(239,68,68,0.05)', 
-                border: '1px solid rgba(239,68,68,0.2)', 
-                borderRadius: '8px',
-                fontSize: '12px',
-                color: 'var(--muted)',
-                textAlign: 'center'
-              }}>
-                💡 <strong>Demo Mode:</strong> This is a frontend preview. The AI chat functionality requires a local backend server.
-              </div>
-            )}
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginTop: 8 }}>
-              <label className="btn" style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
-                <input type="file" multiple onChange={(e)=>setFiles(Array.from(e.target.files || []))} style={{ display:'none' }} />
-                Choose files
-              </label>
-              {files.length>0 && <div className="tag">{files.length} file(s) selected</div>}
+            
+            {/* Frontend Demo Notice */}
+            <div style={{ 
+              marginTop: '12px', 
+              padding: '12px', 
+              background: 'rgba(239,68,68,0.05)', 
+              border: '1px solid rgba(239,68,68,0.2)', 
+              borderRadius: '8px',
+              fontSize: '12px',
+              color: 'var(--muted)',
+              textAlign: 'center'
+            }}>
+              💡 <strong>Frontend Demo:</strong> This is a preview of the LegalEase interface. 
+              The AI chat functionality requires a backend server to be running locally.
             </div>
-            <div className="btn-row">
-              <div></div>
+            
+            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, marginTop: 8, flexWrap:'wrap' }}>
+              <div style={{ display:'inline-flex', alignItems:'center', gap:10 }}>
+                <label className="btn" style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
+                  <input type="file" multiple onChange={(e)=>setFiles(Array.from(e.target.files || []))} style={{ display:'none' }} />
+                  Choose files
+                </label>
+                {files.length>0 && <div className="tag">{files.length} file(s) selected</div>}
+              </div>
               <div>
-                <button className="btn" onPointerDown={onButtonPointer} onClick={()=>{ navigator.clipboard.writeText(reportText || ""); setToast("Copied insights"); setTimeout(()=>setToast(""), 1800); }} disabled={isLoading}><Copy size={16} style={{ verticalAlign:'text-bottom' }}/> Copy insights</button>
                 <button type="button" className="btn primary" onPointerDown={onButtonPointer} onClick={send} disabled={!canSend}><Send size={16} style={{ verticalAlign:'text-bottom' }}/> {isLoading ? "Analysing…" : "Analyse"}</button>
               </div>
             </div>
@@ -489,14 +504,8 @@ export default function App() {
           )}
           {!reportText && (
             <div style={{ margin: 12, fontSize:16, color:'var(--muted)', textAlign: 'center' }}>
-              {IS_PAGES ? (
-                <>
-                  <div style={{ marginBottom: '8px' }}>📋 This is a frontend demo of LegalEase</div>
-                  <div style={{ fontSize: '14px' }}>To test the full AI analysis functionality, run the backend server locally</div>
-                </>
-              ) : (
-                'Add files to analyse, or write a short description, then select Analyse.'
-              )}
+              <div style={{ marginBottom: '8px' }}>📋 This is a frontend demo of LegalEase</div>
+              <div style={{ fontSize: '14px' }}>To test the full AI analysis functionality, run the backend server locally</div>
             </div>
           )}
           {isCurrentStreaming && (
@@ -516,6 +525,9 @@ export default function App() {
                 exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.18 }}
               >
+                <div style={{ display:'flex', justifyContent:'flex-end', padding:'8px 12px' }}>
+                  <button className="btn" onPointerDown={onButtonPointer} onClick={()=>{ navigator.clipboard.writeText(reportText || ""); setToast("Copied insights"); setTimeout(()=>setToast(""), 1800); }} disabled={isLoading}><Copy size={16} style={{ verticalAlign:'text-bottom' }}/> Copy insights</button>
+                </div>
                 <Report text={reportText} attachments={reportAttachments} streaming={isCurrentStreaming} />
               </motion.div>
             </AnimatePresence>
@@ -527,15 +539,7 @@ export default function App() {
           <button className="btn" onClick={exportPDF}>Export PDF</button>
         </div>
 
-        <footer className="site-footer">
-          <div className="footer-left">
-            <img className="footer-logo" src="/favicon.svg" alt="" />
-            <div className="footer-brand">ecoSure</div>
-          </div>
-          <div className="footer-meta">
-            Queensland, Australia only
-          </div>
-        </footer>
+
       </section>
       {lightbox && (
         <div className="lightbox" onClick={()=>setLightbox(null)}>

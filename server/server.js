@@ -81,7 +81,7 @@ app.post('/api/chat/stream', upload.array('files'), async (req, res) => {
       for (const f of files) fs.unlink(f.path, () => {});
     }
 
-    const contentToSend = message || 'Please analyze the attached file(s) and summarize key insights.';
+    const contentToSend = message || 'Please analyze the attached file(s) and provide legal insights.';
 
     await openai.beta.threads.messages.create(thread.id, {
       role: 'user',
