@@ -10,10 +10,11 @@ import Ripples from "./components/Ripples.jsx";
 import BiomeSwitch from "./components/BiomeSwitch.jsx";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+const IS_PAGES = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
 
 /* ---------- Local storage helpers (single thread) ---------- */
-const LS_THREAD_ID = "eco.assistant.threadId";
-const LS_BIOME = "eco.assistant.biome";
+const LS_THREAD_ID = "legalease.assistant.threadId";
+const LS_BIOME = "legalease.assistant.biome";
 function loadThreadId() { return localStorage.getItem(LS_THREAD_ID) || ""; }
 function saveThreadId(id) { localStorage.setItem(LS_THREAD_ID, id || ""); }
 function loadBiome(){ return localStorage.getItem(LS_BIOME) || 'Forest'; }
@@ -64,8 +65,7 @@ function Brand(){
     <div className="brand-wrap">
       <div className="brand-logo" aria-hidden="true" />
       <div className="brand-text">
-        <div className="title">ecoSure</div>
-        <div className="tag subtitle">Biodiversity • Conservation • Compliance</div>
+        <div className="title">LegalEase</div>
       </div>
     </div>
   );
@@ -393,17 +393,33 @@ export default function App() {
       <section className="card main">
         <div className="header">
           <Brand />
-          <div className="header-tools">
-            <BiomeSwitch value={biome} onChange={setBiome} />
-          </div>
         </div>
+        
+        {IS_PAGES && (
+          <div style={{ 
+            background: 'rgba(239,68,68,0.1)', 
+            border: '1px solid rgba(239,68,68,0.3)', 
+            borderRadius: '12px', 
+            padding: '16px', 
+            margin: '0 20px 20px 20px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '14px', color: 'var(--ink)', marginBottom: '8px' }}>
+              <strong>🚀 Frontend Demo</strong>
+            </div>
+            <div style={{ fontSize: '12px', color: 'var(--muted)' }}>
+              This is a static demo of the LegalEase interface. To use the full AI chat functionality, 
+              you'll need to run the backend server locally. Check the README for setup instructions.
+            </div>
+          </div>
+        )}
 
         <div className="print-header" aria-hidden="true">
           <div className="print-brand">
             <img className="print-logo-img" src="/favicon.svg" alt="" />
             <div className="print-text">
-              <div className="print-title">ecoSure</div>
-              <div className="print-sub">Environmental Advice Report</div>
+              <div className="print-title">LegalEase</div>
+              <div className="print-sub">Legal Advice Report</div>
             </div>
           </div>
           <div className="print-meta">{printDate} · Queensland, Australia</div>
@@ -416,12 +432,26 @@ export default function App() {
           )}
         </div>
 
-        <div className="tag notice">Queensland, Australia only — may not apply outside QLD.</div>
+
 
         {showComposer ? (
           <Glass className="composer" as="div" key="composer-pane">
             <label htmlFor="prompt" style={{ display: "block", fontSize:14, color:'var(--muted)' }}>Details (optional)</label>
-            <textarea id="prompt" ref={inputRef} onInput={(e)=>setDraft(e.currentTarget.value)} onKeyDown={onKeyDown} placeholder="Describe your project or question for environmental advice" />
+            <textarea id="prompt" ref={inputRef} onInput={(e)=>setDraft(e.currentTarget.value)} onKeyDown={onKeyDown} placeholder="Describe your project or question for advice" />
+            {IS_PAGES && !draft.trim() && files.length === 0 && (
+              <div style={{ 
+                marginTop: '12px', 
+                padding: '12px', 
+                background: 'rgba(239,68,68,0.05)', 
+                border: '1px solid rgba(239,68,68,0.2)', 
+                borderRadius: '8px',
+                fontSize: '12px',
+                color: 'var(--muted)',
+                textAlign: 'center'
+              }}>
+                💡 <strong>Demo Mode:</strong> This is a frontend preview. The AI chat functionality requires a local backend server.
+              </div>
+            )}
             <div style={{ display:'flex', alignItems:'center', gap:10, marginTop: 8 }}>
               <label className="btn" style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
                 <input type="file" multiple onChange={(e)=>setFiles(Array.from(e.target.files || []))} style={{ display:'none' }} />
@@ -458,8 +488,15 @@ export default function App() {
             <div className="tag" style={{ color: "#b91c1c", margin: 12 }}>Error: {errorMsg}</div>
           )}
           {!reportText && (
-            <div style={{ margin: 12, fontSize:16, color:'var(--muted)' }}>
-              Add files to analyse, or write a short description, then select Analyse.
+            <div style={{ margin: 12, fontSize:16, color:'var(--muted)', textAlign: 'center' }}>
+              {IS_PAGES ? (
+                <>
+                  <div style={{ marginBottom: '8px' }}>📋 This is a frontend demo of LegalEase</div>
+                  <div style={{ fontSize: '14px' }}>To test the full AI analysis functionality, run the backend server locally</div>
+                </>
+              ) : (
+                'Add files to analyse, or write a short description, then select Analyse.'
+              )}
             </div>
           )}
           {isCurrentStreaming && (

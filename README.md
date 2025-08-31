@@ -1,4 +1,4 @@
-# Assistants API Server (Streaming SSE)
+# LegalEase — Assistants API Server (Streaming SSE)
 
 ## Setup
 1) cd server
