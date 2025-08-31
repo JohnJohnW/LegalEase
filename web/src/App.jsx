@@ -8,7 +8,7 @@ import Glass from "./components/Glass.jsx";
 import Tilt from "./components/Tilt.jsx";
 import Float from "./components/Float.jsx";
 import TopProgress from "./components/TopProgress.jsx";
-
+import Particles from "./components/Particles.jsx";
 import Ripples from "./components/Ripples.jsx";
 
 
@@ -421,7 +421,7 @@ export default function App() {
   return (
     <div className="app">
       <TopProgress active={isLoading || isStreaming} />
-
+      <Particles count={12} />
       <Ripples intensity={0.12} />
       <section className="card main">
         <div className="header">
@@ -453,22 +453,6 @@ export default function App() {
           <Glass className="composer" as="div" key="composer-pane">
             <label htmlFor="prompt" style={{ display: "block", fontSize:14, color:'var(--muted)' }}>Details (optional)</label>
             <textarea id="prompt" ref={inputRef} onInput={(e)=>setDraft(e.currentTarget.value)} onKeyDown={onKeyDown} placeholder="Describe your project or question for advice" />
-            
-            {/* Frontend Demo Notice */}
-            <div style={{ 
-              marginTop: '12px', 
-              padding: '12px', 
-              background: 'rgba(239,68,68,0.05)', 
-              border: '1px solid rgba(239,68,68,0.2)', 
-              borderRadius: '8px',
-              fontSize: '12px',
-              color: 'var(--muted)',
-              textAlign: 'center'
-            }}>
-              💡 <strong>Frontend Demo:</strong> This is a preview of the LegalEase interface. 
-              The AI chat functionality requires a backend server to be running locally.
-            </div>
-            
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:10, marginTop: 8, flexWrap:'wrap' }}>
               <div style={{ display:'inline-flex', alignItems:'center', gap:10 }}>
                 <label className="btn" style={{ display:'inline-flex', alignItems:'center', gap:8 }}>
@@ -503,9 +487,8 @@ export default function App() {
             <div className="tag" style={{ color: "#b91c1c", margin: 12 }}>Error: {errorMsg}</div>
           )}
           {!reportText && (
-            <div style={{ margin: 12, fontSize:16, color:'var(--muted)', textAlign: 'center' }}>
-              <div style={{ marginBottom: '8px' }}>📋 This is a frontend demo of LegalEase</div>
-              <div style={{ fontSize: '14px' }}>To test the full AI analysis functionality, run the backend server locally</div>
+            <div style={{ margin: 12, fontSize:16, color:'var(--muted)' }}>
+              Add files to analyse, or write a short description, then select Analyse.
             </div>
           )}
           {isCurrentStreaming && (

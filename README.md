@@ -1,10 +1,10 @@
-# LegalEase — Assistants API Server (Streaming SSE) + Web
+# ecoSure — Assistants API Server (Streaming SSE) + Web
 
 This project provides:
 - A minimal Node.js API that proxies the OpenAI Assistants API and streams responses via Server‑Sent Events (SSE) with optional file uploads.
 - A Vite + React web app that renders a polished “assessment report” view from streamed markdown (with references, TOC, attachments, PDF export).
 
-Jurisdiction note: General legal context is assumed in prompts and presentation.
+Jurisdiction note: Queensland, Australia (QLD) context is assumed in prompts and presentation.
 
 ---
 
@@ -54,7 +54,7 @@ You can configure this entirely in the OpenAI UI, or via API. The server require
 - Turn on the tool: `File search`.
 
 Recommended instructions (adapt for your use case):
-- Focus on general legal context and compliance requirements.
+- Focus on Queensland, Australia legislation and environmental context.
 - When citing evidence, include direct URLs when available and name the source document.
 - Structure responses as: (1) numbered concerns; (2) summary; (3) fenced JSON Eco‑Score.
 
@@ -75,7 +75,7 @@ import fs from 'node:fs';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // 1) Create a vector store
-const store = await openai.beta.vectorStores.create({ name: 'LegalEase-Knowledge' });
+const store = await openai.beta.vectorStores.create({ name: 'ecoSure-Knowledge' });
 
 // 2) Upload a file and add to the store
 const file = await openai.files.create({
@@ -100,15 +100,16 @@ Optional retrieval configuration
 
 The Assistant should consult and cite these resources where relevant.
 
-### Legislation (General)
-- General Legal Statutes
-- Compliance Regulations
-- Administrative Law
-- Regulatory Frameworks
-- Policy Guidelines
-- Legal Standards
-- Compliance Requirements
-- Regulatory Procedures
+### Legislation (Queensland)
+- Nature Conservation Act
+- Fisheries Act
+- Environmental Protection Act
+- Waste Reduction and Recycling Act
+- Environmental Offsets Act
+- Environmental Protection (Air) Policy
+- Environmental Protection (Noise) Policy
+- Environmental Protection Regulation
+- Environmental Protection (Water and Wetland Biodiversity) Policy
 
 ### TERN data
 - Australia’s Environment Decadal Report 2025
