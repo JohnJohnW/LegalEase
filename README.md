@@ -1,4 +1,4 @@
-# ecoSure — Assistants API Server (Streaming SSE) + Web
+# LegalEase — Assistants API Server (Streaming SSE) + Web
 
 This project provides:
 - A minimal Node.js API that proxies the OpenAI Assistants API and streams responses via Server‑Sent Events (SSE) with optional file uploads.
@@ -40,7 +40,7 @@ Jurisdiction note: Queensland, Australia (QLD) context is assumed in prompts and
 - `GET /api/files/:fileId` → proxy download/preview for OpenAI Files
 - `GET /health` → `{ ok: true }`
 
-Output format guidance (for the Assistant): keep three sections in the response: numbered concerns, a concise summary, and an Eco‑Score JSON object at the end inside a fenced code block.
+Output format guidance (for the Assistant): keep three sections in the response: numbered concerns, a concise summary, and a Legal‑Score JSON object at the end inside a fenced code block.
 
 ---
 
@@ -56,7 +56,7 @@ You can configure this entirely in the OpenAI UI, or via API. The server require
 Recommended instructions (adapt for your use case):
 - Focus on Queensland, Australia legislation and environmental context.
 - When citing evidence, include direct URLs when available and name the source document.
-- Structure responses as: (1) numbered concerns; (2) summary; (3) fenced JSON Eco‑Score.
+- Structure responses as: (1) numbered concerns; (2) summary; (3) fenced JSON Legal‑Score.
 
 ### 2) Create or attach a Vector Store
 - In the Assistant configuration, create a Vector Store and attach it to the Assistant (or attach an existing one).
@@ -75,7 +75,7 @@ import fs from 'node:fs';
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // 1) Create a vector store
-const store = await openai.beta.vectorStores.create({ name: 'ecoSure-Knowledge' });
+const store = await openai.beta.vectorStores.create({ name: 'LegalEase-Knowledge' });
 
 // 2) Upload a file and add to the store
 const file = await openai.files.create({

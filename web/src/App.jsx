@@ -16,7 +16,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
 const IS_PAGES = typeof window !== 'undefined' && window.location.hostname.endsWith('github.io');
 
 /* ---------- Local storage helpers (single thread) ---------- */
-const LS_THREAD_ID = "eco.assistant.threadId";
+const LS_THREAD_ID = "legal.assistant.threadId";
 function loadThreadId() { return localStorage.getItem(LS_THREAD_ID) || ""; }
 function saveThreadId(id) { localStorage.setItem(LS_THREAD_ID, id || ""); }
 
